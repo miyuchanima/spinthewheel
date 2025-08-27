@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spin the Wheel - 1 to 10 Oranges</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: orange;
+      font-family: Arial, sans-serif;
+    }
+
+    .wheel-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 5px solid #fff;
+      position: relative;
+      overflow: hidden;
+      transition: transform 6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    .wheel canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    /* Pointer at 3 o'clock (right side) */
+    .pointer {
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 20px solid transparent;
+      border-bottom: 20px solid transparent;
+      border-left: 30px solid yellow;
+      z-index: 10;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 25px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ddd;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wheel-container">
+    <div class="pointer"></div>
+    <div class="wheel" id="wheel">
+      <canvas id="wheelCanvas" width="400" height="400"></canvas>
+    </div>
+  </div>
+
+  <button onclick="spinWheel()">🎡 Spin</button>
+  <div class="result" id="result"></div>
+
+  <script>
+    const canvas = document.getElementById("wheelCanvas");
+    const ctx = canvas.getContext("2d");
+    const wheel = document.getElementById("wheel");
+    const result = document.getElementById("result");
+    let spinning = false;
+    let currentRotation = 0;
+
+    const prizes = [1,2,3,4,5,6,7,8,9,10]; // Numbers
+    const numSegments = prizes.length;
+    const segmentAngle = (2 * Math.PI) / numSegments;
+    const colors = ["#1abc9c", "#16a085", "#3498db", "#2980b9", "#9b59b6",
+                    "#8e44ad", "#f39c12", "#e67e22", "#e74c3c", "#c0392b"];
+
+    // Draw the wheel
+    function drawWheel() {
+      for (let i = 0; i < numSegments; i++) {
+        const angle = i * segmentAngle;
+        
+        // Draw slice
+        ctx.beginPath();
+        ctx.moveTo(200, 200);
+        ctx.arc(200, 200, 200, angle, angle + segmentAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+
+        // Add number + 🍊
+        ctx.save();
+        ctx.translate(200, 200);
+        ctx.rotate(angle + segmentAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(prizes[i] + " 🍊", 170, 10);
+        ctx.restore();
+      }
+    }
+    drawWheel();
+
+    // Spin logic
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+
+      const spinDegrees = Math.floor(2000 + Math.random() * 4000);
+      currentRotation += spinDegrees;
+
+      wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        spinning = false;
+
+        const normalized = (currentRotation % 360 + 360) % 360; 
+        const segmentSize = 360 / numSegments;
+
+        // Adjust offset for 3 o'clock pointer
+        let winningIndex = Math.floor(((-10 - normalized + 360) % 360) / segmentSize) % numSegments;
+
+    result.innerHTML = `🎉 You won: ${prizes[winningIndex]} 🍊!<br>
+Take a screenshot of this and comment on my 'Spin the Wheel' post to claim the reward.`;
+
+
+      }, 6200);
+    }
+  </script>
+
+</body>
+</html>
